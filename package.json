@@ -1,0 +1,23 @@
+{
+  "name": "employee-management-system",
+  "version": "1.0.0",
+  "description": "employee management system",
+  "main": "managementSystem.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hakeem235/Employee-Management-System.git"
+  },
+  "author": "Ahmed Hakeem",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hakeem235/Employee-Management-System/issues"
+  },
+  "homepage": "https://github.com/hakeem235/Employee-Management-System#readme",
+  "dependencies": {
+    "inquirer": "^8.0.0",
+    "mysql": "^2.18.1"
+  }
+}
