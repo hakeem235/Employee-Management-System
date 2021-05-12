@@ -28,18 +28,55 @@ connection.connect(function (err) {
 
 // 
 const viewAll = () => {
+    connection.query('SELECT * FROM employee', (err, res) => {
+        if (err) throw err;
+        res.forEach(({
+            id,
+            first_name,
+            last_name,
+            role_id,
+            manager_id
+        }) => {
+            console.log(`${id} | ${first_name} | ${last_name} | ${role_id} | ${manager_id} |`);
+        });
+        console.log('-----------------------------------');
+        mainMenu();
+    });
+};
 
-
-}
 
 const viewDept = () => {
-
-}
+    connection.query('SELECT * FROM department', (err, res) => {
+        if (err) throw err;
+        res.forEach(({
+            id,
+            dept_name,
+        }) => {
+            console.log(`${id} | ${dept_name} |`);
+        });
+        console.log('-----------------------------------');
+        mainMenu();
+    });
+};
 
 const viewRoles = () => {
+    connection.query('SELECT * FROM roles', (err, res) => {
+        if (err) throw err;
+        res.forEach(({
+            id,
+            title,
+            salary,
+            dept_id,
 
-}
+        }) => {
+            console.log(`${id} | ${title} | ${salary} | ${dept_id} |`);
+        });
+        console.log('-----------------------------------');
+        mainMenu();
+    });
+};
 const addEmp = () => {
+    
 
 }
 const addRole = () => {
