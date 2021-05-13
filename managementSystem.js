@@ -26,9 +26,8 @@ connection.connect(function (err) {
     }
 });
 
-// 
 const viewAll = () => {
-    connection.query('SELECT * FROM employee', (err, res) => {
+    connection.query('SELECT * FROM employee ',(err, res) => {
         if (err) throw err;
         res.forEach(({
             id,
@@ -37,13 +36,12 @@ const viewAll = () => {
             role_id,
             manager_id
         }) => {
-            console.log(`${id} | ${first_name} | ${last_name} | ${role_id} | ${manager_id} |`);
+            console.log(`| ${id} | ${first_name} | ${last_name} | ${role_id} | ${manager_id} |`);
         });
         console.log('-----------------------------------');
         mainMenu();
     });
 };
-
 
 const viewDept = () => {
     connection.query('SELECT * FROM department', (err, res) => {
@@ -52,7 +50,7 @@ const viewDept = () => {
             id,
             dept_name,
         }) => {
-            console.log(`${id} | ${dept_name} |`);
+            console.log(`| ${id} | ${dept_name} |`);
         });
         console.log('-----------------------------------');
         mainMenu();
@@ -69,30 +67,164 @@ const viewRoles = () => {
             dept_id,
 
         }) => {
-            console.log(`${id} | ${title} | ${salary} | ${dept_id} |`);
+            console.log(` | ${id} | ${title} | ${salary} | ${dept_id} |`);
         });
         console.log('-----------------------------------');
         mainMenu();
     });
 };
+
 const addEmp = () => {
-    
+    inquirer.prompt([{
+            type: 'input',
+            message: 'Please enter the first name?',
+            name: 'first_name',
+        },
+        {
+            type: 'input',
+            message: 'Please enter the last name?',
+            name: 'last_name',
+        },
+        {
+            type: 'list',
+            name: 'department',
+            message: 'Please Chose Depatment',
+            choices: ['HR', 'IT', "Finance", 'Legal'],
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: 'Pleas enter employee role?',
+            choices: ['Manager', 'Tec Support', 'Accountant', 'Lawyer', 'Tea Boy']
+        },
 
+    ]).then((answer) => {
+            console.log(answer)
+            const query = connection.query("INSERT INTO employee SET ?", {
+                first_name: answer.first_name,
+                last_name: answer.last_name,
+                role_id: answer.role,
+            });
+        },
+        (err, res) => {
+            if (err) throw err;
+            console.log('employee inserted!\n');
+            // Call updateProduct AFTER the INSERT completes
+            mainMenu();
+        })
 }
+
 const addRole = () => {
+    inquirer.prompt([{
+            type: 'input',
+            message: 'What is the new role?',
+            name: 'title',
+        },
+        {
+            type: 'input',
+            message: 'The Basic salary?',
+            name: 'salary',
+        },
+        {
+            type: 'input',
+            message: 'what is the department ID',
+            name: 'dep_id'
+        }
 
+    ]).then((answer) => {
+            console.log(answer)
+            const query = connection.query("INSERT INTO roles SET ?", {
+                title: answer.title,
+                salary: answer.salary,
+                dept_id: answer.dep_id,
+            });
+        },
+        (err, res) => {
+            if (err) throw err;
+            console.log('new role been added');
+            mainMenu();
+        })
 }
+
 const addDept = () => {
+    inquirer.prompt([{
+        type: 'input',
+        message: 'what is the new deartment',
+        name: 'dept_name'
+    }]).then((answer) => {
+            console.log(answer)
+            connection.query("INSERT INTO roles SET ?", {
+                dept_name: answer.dept_name,
+            });
+        },
+        (err, res) => {
+            if (err) throw err;
+            console.log('new Department been added');
+            mainMenu();
+        })
 
 }
 const removeEmp = () => {
+    inquirer.prompt([{
+        type: 'input',
+        message: 'Enter employee ID',
+        name: 'emp_id',
+    }]).then((answer) => {
+        const query = connection.query(
+            'DELETE FROM employee WHERE ?', {
+                id: answer.emp_id,
+            },
+            (err, res) => {
+                if (err) throw err;
+                console.log(`${res.affectedRows} Employee Removed!\n`);
+                // Call viewAll AFTER the DELETE completes
+                mainMenu();
+            }
+        );
+
+    })
 
 }
 const removeDept = () => {
+    inquirer.prompt([{
+        type: 'input',
+        message: 'which department you whant to delete?',
+        name: 'dep_name',
+    }]).then((answe) => { 
+        connection.query(
+        'DELETE FROM department WHERE ?', {
+            dept_name: answer.dep_name,
+    },
+        (err, res) => {
+            if (err) throw err;
+            console.log(`${res.affectedRows} Department Removed!\n`);
+            // Call viewAll AFTER the DELETE completes
+            mainMenu();
+        }
+    );
 
+    })
 }
-const removeRole = () => {
 
+const removeRole = () => {
+    inquirer.prompt([{
+        type: 'input',
+        message: 'which role you whant to delete?',
+        name: 'role_name',
+
+    }]).then((answer) => {
+        connection.query(
+            'DELETE FROM roles WHERE ?', {
+                title: answer.role_name,
+            },
+            (err, res) => {
+                if (err) throw err;
+                console.log(`${res.affectedRows} products deleted!\n`);
+                // Call readProducts AFTER the DELETE completes
+                mainMenu();
+            }
+        );
+    })
 }
 const updateRole = () => {
 
@@ -104,6 +236,7 @@ const viewEmpMang = () => {
 
 }
 const viewBudget = () => {
+    connection.query('SELECT dept_name, SUM salary FROM employees GROUP BY dept_name;')
 
 }
 
@@ -181,17 +314,17 @@ function mainMenu() {
 // Welcome Message
 function welcome() {
     console.log(` xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`);
-    console.log(` x                                     x`);
-    console.log(`            `);
-    console.log(`   Welcome to Ahmed's Management System `);
-    console.log(`            `);
-    console.log(` x                                     x`);
+    console.log(` x-------------------------------------x`);
+    console.log(` |                                     |`);
+    console.log(`  Welcome to Ahmed's Management System  `);
+    console.log(` |                                     |`);
+    console.log(` x-------------------------------------x`);
     console.log(` xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`);
-    console.log(`            `);
+    console.log(`                                        `);
 };
 
 // Start Program Function
-function init() {
+function start() {
     // with welcome message
     welcome();
     // then firing main menu
@@ -199,4 +332,4 @@ function init() {
 }
 
 // Starting Program
-init();
+start();

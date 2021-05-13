@@ -46,9 +46,9 @@ roles(title, salary, dept_id)
 VALUES 
 ("Manager", 90000, 1), 
 ("Tec Support", 80000, 2),
-("Accountant", 70000, 2), 
-("Lawyer", 75000, 1), 
-("Tea Boy", 5000, 1);
+("Accountant", 70000, 3), 
+("Lawyer", 75000, 4), 
+("Tea Boy", 5000, 5);
 
 INSERT INTO 
 employee(first_name, last_name, role_id, manager_id) 
@@ -57,5 +57,5 @@ VALUES
 ("Jeff", "Bezos", 4, 1), 
 ("ELon", "Musk", 3, 1), 
 ("Bill", "Gates", 2, 1), 
-("Bill", "Hwelett", 5, 1, 
+("Bill", "Hwelett", 5, 1), 
 ("Dave", "Packard", 3, 1);
