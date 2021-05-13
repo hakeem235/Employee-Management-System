@@ -149,11 +149,11 @@ const addRole = () => {
 const addDept = () => {
     inquirer.prompt([{
         type: 'input',
-        message: 'what is the new deartment',
+        message: 'what is the new department',
         name: 'dept_name'
     }]).then((answer) => {
             console.log(answer)
-            connection.query("INSERT INTO roles SET ?", {
+            connection.query("INSERT INTO department SET ?", {
                 dept_name: answer.dept_name,
             });
         },
