@@ -27,16 +27,16 @@ connection.connect(function (err) {
 });
 
 const viewAll = () => {
-    connection.query('SELECT * FROM employee ',(err, res) => {
+    connection.query('SELECT id, first_name, last_name, title,dept_name, salary FROM employee INNER JOIN roles ON employee.role_id=roles.id INNER JOIN department ON roles.dept_id=department.id;', (err, res) => {
         if (err) throw err;
         res.forEach(({
-            id,
             first_name,
             last_name,
-            role_id,
-            manager_id
+            title,
+            dept_name,
+            salary
         }) => {
-            console.log(`| ${id} | ${first_name} | ${last_name} | ${role_id} | ${manager_id} |`);
+            console.log(`| ${first_name} | ${last_name} | ${title} | ${dept_name} | ${salary} |`);
         });
         console.log('-----------------------------------');
         mainMenu();
@@ -133,7 +133,7 @@ const addRole = () => {
 
     ]).then((answer) => {
             console.log(answer)
-            const query = connection.query("INSERT INTO roles SET ?", {
+            connection.query("INSERT INTO roles SET ?", {
                 title: answer.title,
                 salary: answer.salary,
                 dept_id: answer.dep_id,
@@ -190,18 +190,18 @@ const removeDept = () => {
         type: 'input',
         message: 'which department you whant to delete?',
         name: 'dep_name',
-    }]).then((answe) => { 
+    }]).then((answe) => {
         connection.query(
-        'DELETE FROM department WHERE ?', {
-            dept_name: answer.dep_name,
-    },
-        (err, res) => {
-            if (err) throw err;
-            console.log(`${res.affectedRows} Department Removed!\n`);
-            // Call viewAll AFTER the DELETE completes
-            mainMenu();
-        }
-    );
+            'DELETE FROM department WHERE ?', {
+                dept_name: answer.dep_name,
+            },
+            (err, res) => {
+                if (err) throw err;
+                console.log(`${res.affectedRows} Department Removed!\n`);
+                // Call viewAll AFTER the DELETE completes
+                mainMenu();
+            }
+        );
 
     })
 }
@@ -227,16 +227,31 @@ const removeRole = () => {
     })
 }
 const updateRole = () => {
-
+    connection.query('UPDATE employee SET column_name = new_value WHERE condition');
 }
 const updateMang = () => {
 
+    connection.query('UPDATE employee SET column_name = new_value WHERE condition');
 }
 const viewEmpMang = () => {
 
 }
 const viewBudget = () => {
-    connection.query('SELECT dept_name, SUM salary FROM employees GROUP BY dept_name;')
+    inquirer.prompt([{
+        type: 'input',
+        message: 'whice department you need to knowe there budget?',
+        name: 'dep_budget'
+    }]).then((answe) => {
+        connection.query('SELECT dept_name, SUM salary FROM employee GROUP BY dept_name;', {
+                dept_name: answe.dep_budget
+            },
+            (err, res) => {
+                if (err) throw err;
+                // Call readProducts AFTER the DELETE completes
+                mainMenu();
+            })
+
+    })
 
 }
 
