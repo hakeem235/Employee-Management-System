@@ -65,10 +65,8 @@ const viewRoles = () => {
             id,
             title,
             salary,
-            dept_id,
-
         }) => {
-            console.log(` | ${id} | ${title} | ${salary} | ${dept_id} |`);
+            console.log(` | ${id} | ${title} | ${salary} |`);
         });
         console.log('-----------------------------------');
         mainMenu();
@@ -107,7 +105,7 @@ const addEmp = () => {
                 role_id: answer.role,
             });
         },
-        (err, res) => {
+        (err) => {
             if (err) throw err;
             console.log('employee inserted!\n');
             // Call updateProduct AFTER the INSERT completes
@@ -140,9 +138,10 @@ const addRole = () => {
                 dept_id: answer.dep_id,
             });
         },
-        (err, res) => {
+        (err) => {
             if (err) throw err;
             console.log('new role been added');
+            viewRoles()
             mainMenu();
         })
 }
@@ -161,6 +160,7 @@ const addDept = () => {
         (err, res) => {
             if (err) throw err;
             console.log('new Department been added');
+            viewDept();
             mainMenu();
         })
 
@@ -179,6 +179,7 @@ const removeEmp = () => {
                 if (err) throw err;
                 console.log(`${res.affectedRows} Employee Removed!\n`);
                 // Call viewAll AFTER the DELETE completes
+                viewAll();
                 mainMenu();
             }
         );
@@ -200,6 +201,7 @@ const removeDept = () => {
                 if (err) throw err;
                 console.log(`${res.affectedRows} Department Removed!\n`);
                 // Call viewAll AFTER the DELETE completes
+                viewAll();
                 mainMenu();
             }
         );
@@ -221,7 +223,8 @@ const removeRole = () => {
             (err, res) => {
                 if (err) throw err;
                 console.log(`${res.affectedRows} products deleted!\n`);
-                // Call readProducts AFTER the DELETE completes
+                // Call viewAll AFTER the DELETE completes
+                viewAll();
                 mainMenu();
             }
         );
