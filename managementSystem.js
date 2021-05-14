@@ -27,16 +27,17 @@ connection.connect(function (err) {
 });
 
 const viewAll = () => {
-    connection.query('SELECT id, first_name, last_name, title,dept_name, salary FROM employee INNER JOIN roles ON employee.role_id=roles.id INNER JOIN department ON roles.dept_id=department.id;', (err, res) => {
+    connection.query('SELECT employee.id,first_name, last_name, title,dept_name, salary FROM employee INNER JOIN roles ON employee.role_id=roles.id INNER JOIN department ON roles.dept_id=department.id;', (err, res) => {
         if (err) throw err;
         res.forEach(({
+            id,
             first_name,
             last_name,
             title,
             dept_name,
             salary
         }) => {
-            console.log(`| ${first_name} | ${last_name} | ${title} | ${dept_name} | ${salary} |`);
+            console.log(`| ${id} | ${first_name} | ${last_name} | ${title} | ${dept_name} | ${salary} |`);
         });
         console.log('-----------------------------------');
         mainMenu();
