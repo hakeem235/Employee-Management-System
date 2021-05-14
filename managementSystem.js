@@ -1,5 +1,6 @@
 const mysql = require("mysql");
 const inquirer = require('inquirer');
+require('console.table');
 
 // create the connection information
 var connection = mysql.createConnection({
@@ -25,94 +26,112 @@ connection.connect(function (err) {
         mainMenu();
     }
 });
-
+// function to view all Employee
 const viewAll = () => {
     connection.query('SELECT employee.id,first_name, last_name, title,dept_name, salary FROM employee INNER JOIN roles ON employee.role_id=roles.id INNER JOIN department ON roles.dept_id=department.id;', (err, res) => {
         if (err) throw err;
-        res.forEach(({
-            id,
-            first_name,
-            last_name,
-            title,
-            dept_name,
-            salary
-        }) => {
-            console.log(`| ${id} | ${first_name} | ${last_name} | ${title} | ${dept_name} | ${salary} |`);
-        });
+        console.table(res)
         console.log('-----------------------------------');
         mainMenu();
     });
 };
-
+// function to view all Departments
 const viewDept = () => {
     connection.query('SELECT * FROM department', (err, res) => {
         if (err) throw err;
-        res.forEach(({
-            id,
-            dept_name,
-        }) => {
-            console.log(`| ${id} | ${dept_name} |`);
-        });
+        console.table(res)
         console.log('-----------------------------------');
         mainMenu();
     });
 };
-
+// function to view all Roles
 const viewRoles = () => {
     connection.query('SELECT * FROM roles', (err, res) => {
         if (err) throw err;
-        res.forEach(({
-            id,
-            title,
-            salary,
-        }) => {
-            console.log(` | ${id} | ${title} | ${salary} |`);
-        });
+        console.table(res)
         console.log('-----------------------------------');
         mainMenu();
     });
 };
-
+// function to add new Employee
 const addEmp = () => {
-    inquirer.prompt([{
-            type: 'input',
-            message: 'Please enter the first name?',
-            name: 'first_name',
-        },
-        {
-            type: 'input',
-            message: 'Please enter the last name?',
-            name: 'last_name',
-        },
-        {
-            type: 'list',
-            name: 'department',
-            message: 'Please Chose Depatment',
-            choices: ['HR', 'IT', "Finance", 'Legal'],
-        },
-        {
-            type: 'list',
-            name: 'role',
-            message: 'Pleas enter employee role?',
-            choices: ['Manager', 'Tec Support', 'Accountant', 'Lawyer', 'Tea Boy']
-        },
+    connection.query('SELECT * FROM employee', (err, results) => {
+        if (err) throw err;
+        inquirer.prompt([{
+                type: 'input',
+                message: 'Please enter the first name?',
+                name: 'first_name',
+            },
+            {
+                type: 'input',
+                message: 'Please enter the last name?',
+                name: 'last_name',
+            },
+            {
+                name: 'department',
+                type: 'rawlist',
+                choices() {
+                    const choiceArray = [];
+                    results.forEach((dept_name) => {
+                        choiceArray.push(dept_name)
+                    });
+                    return choiceArray;
+                },
+                message: 'Please Chose Depatment',
 
-    ]).then((answer) => {
-            console.log(answer)
-            const query = connection.query("INSERT INTO employee SET ?", {
-                first_name: answer.first_name,
-                last_name: answer.last_name,
-                role_id: answer.role,
+            },
+            {
+                name: 'role',
+                type: 'rawlist',
+                choices() {
+                    const choiceRole = [];
+                    results.forEach((title) => {
+                        choiceRole.push(title)
+                    });
+                    return choiceRole;
+                },
+                message: 'Pleas enter employee role?',
+            },
+            {
+                name: 'manager',
+                type: 'rawlist',
+                choices() {
+                    const choiceManager = [];
+                    results.forEach((manager_id) => {
+                        choiceManager.push(manager_id)
+                    });
+                    return choiceManager;
+                }
+            }
+
+        ]).then((answer) => {
+            let chosenDept;
+            results.forEach((item) => {
+                if (item.dept_id === answer.department) {
+                    chosenDept = item;
+                }
+                // let chosenRole;
+                // if(item.title === answer.role){
+                //     chosenRole = item;
+                // }
             });
-        },
-        (err) => {
-            if (err) throw err;
-            console.log('employee inserted!\n');
-            // Call updateProduct AFTER the INSERT completes
-            mainMenu();
-        })
+            connection.query("INSERT INTO employee SET ?", {
+                    first_name: answer.first_name,
+                    last_name: answer.last_name,
+                    dept_name: answer.department,
+                    // title: answer.role
+                },
+                (err) => {
+                    if (err) throw err;
+                    console.log('employee inserted!\n');
+                    // Call updateProduct AFTER the INSERT completes
+                    mainMenu();
+                }
+            );
+        });
+    })
 }
-
+// function to add new Role
 const addRole = () => {
     inquirer.prompt([{
             type: 'input',
@@ -145,7 +164,7 @@ const addRole = () => {
             mainMenu();
         })
 }
-
+// function to add new Department
 const addDept = () => {
     inquirer.prompt([{
         type: 'input',
@@ -165,6 +184,7 @@ const addDept = () => {
         })
 
 }
+// function to delete Employee
 const removeEmp = () => {
     inquirer.prompt([{
         type: 'input',
@@ -183,10 +203,9 @@ const removeEmp = () => {
                 mainMenu();
             }
         );
-
     })
-
 }
+// function to delete Department
 const removeDept = () => {
     inquirer.prompt([{
         type: 'input',
@@ -208,7 +227,7 @@ const removeDept = () => {
 
     })
 }
-
+// function to delete Role
 const removeRole = () => {
     inquirer.prompt([{
         type: 'input',
@@ -222,7 +241,7 @@ const removeRole = () => {
             },
             (err, res) => {
                 if (err) throw err;
-                console.log(`${res.affectedRows} products deleted!\n`);
+                console.log(`${res.affectedRows} Role deleted!\n`);
                 // Call viewAll AFTER the DELETE completes
                 viewAll();
                 mainMenu();
@@ -230,31 +249,85 @@ const removeRole = () => {
         );
     })
 }
+// function to update Role
 const updateRole = () => {
-    connection.query('UPDATE employee SET column_name = new_value WHERE condition');
-}
+    connection.query('SELECT employee.id,first_name, last_name, title,dept_name, salary FROM employee INNER JOIN roles ON employee.role_id=roles.id INNER JOIN department ON roles.dept_id=department.id', (err, results) => {
+        if (err) throw err;
+        // once you have the items, prompt the user for which they'd like to bid on
+        inquirer
+            .prompt([{
+                    name: 'choice',
+                    type: 'rawlist',
+                    choices() {
+                        const choiceArray = [];
+                        results.forEach(({
+                            first_name
+                        }) => {
+                            choiceArray.push(first_name);
+                        });
+                        return choiceArray;
+                    },
+                    message: 'select the employess?',
+                },
+                {
+                    name: 'new_role',
+                    type: 'input',
+                    message: 'what is the new role?',
+                },
+            ])
+            .then((answer) => {
+                // get the information of the chosen item
+                let chosenRole;
+                results.forEach((item) => {
+                    if (item.title === answer.choice) {
+                        chosenRole = item;
+                    }
+                });
+
+                // bid was high enough, so update db, let the user know, and start over
+                connection.query(
+                    'UPDATE auctions SET ? WHERE ?',
+                    [{
+                            title: answer.new_role,
+                        },
+                        {
+                            role_id: chosenRole.id,
+                        },
+                    ],
+                    (error) => {
+                        if (error) throw err;
+                        console.log('Bid placed successfully!');
+                        viewAll()
+                        mainMenu();
+                    }
+                );
+            });
+    });
+};
+// function to update manager
 const updateMang = () => {
 
     connection.query('UPDATE employee SET column_name = new_value WHERE condition');
 }
+// function to view Employee by manager
 const viewEmpMang = () => {
 
 }
+// function to view Department Budget
 const viewBudget = () => {
     inquirer.prompt([{
-        type: 'input',
+        type: 'rewlist',
         message: 'whice department you need to knowe there budget?',
         name: 'dep_budget'
     }]).then((answe) => {
-        connection.query('SELECT dept_name, SUM salary FROM employee GROUP BY dept_name;', {
-                dept_name: answe.dep_budget
+        connection.query('SELECT dept_id, SUM (salary) FROM roles GROUP BY dept_id;', {
+                dept_id: answe.dep_budget
             },
             (err, res) => {
                 if (err) throw err;
-                // Call readProducts AFTER the DELETE completes
+                console.table(res)
                 mainMenu();
             })
-
     })
 
 }
@@ -332,13 +405,11 @@ function mainMenu() {
 
 // Welcome Message
 function welcome() {
-    console.log(` xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`);
     console.log(` x-------------------------------------x`);
     console.log(` |                                     |`);
     console.log(`  Welcome to Ahmed's Management System  `);
     console.log(` |                                     |`);
     console.log(` x-------------------------------------x`);
-    console.log(` xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`);
     console.log(`                                        `);
 };
 
