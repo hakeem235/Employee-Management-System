@@ -58,4 +58,4 @@ VALUES
 ("ELon", "Musk", 3, 1), 
 ("Bill", "Gates", 2, 1), 
 ("Bill", "Hwelett", 5, 1), 
-("Dave", "Packard", 3, 1);
+("Dave", "Packard", 1, Null);
