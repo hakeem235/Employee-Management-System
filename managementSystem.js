@@ -55,8 +55,49 @@ const viewRoles = () => {
 };
 // function to add new Employee
 const addEmp = () => {
-    connection.query('SELECT * FROM employee', (err, results) => {
-        if (err) throw err;
+    const choiceRole = [];
+    const choiceArray = [];
+    const choiceManager = [];
+    const departmentQuery = () => {
+        connection.query('SELECT * FROM department', (err, results) => {
+            if (err) throw err;
+            results.forEach((dept) => {
+                choiceArray.push({
+                    name: dept.dept_name,
+                    value: dept.id
+                })
+            });
+
+        })
+    }
+    const roleQuery = () => {
+        connection.query('SELECT * FROM roles', (err, results) => {
+            if (err) throw err;
+            results.forEach((role) => {
+                choiceRole.push({
+                    name: role.title,
+                    value: role.id,
+                })
+            })
+        })
+
+    }
+    const managerQuery = () => {
+        connection.query('SELECT * FROM employee where role_id = 1', (err, results) => {
+            if (err) throw err;
+
+            results.forEach((manager) => {
+                choiceManager.push({
+                    name: manager.first_name + " " + manager.last_name,
+                    value: manager.id
+                })
+            })
+        })
+    }
+    managerQuery();
+    roleQuery();
+    departmentQuery();
+    try {
         inquirer.prompt([{
                 type: 'input',
                 message: 'Please enter the first name?',
@@ -70,38 +111,22 @@ const addEmp = () => {
             {
                 name: 'department',
                 type: 'rawlist',
-                choices() {
-                    const choiceArray = [];
-                    results.forEach((dept_name) => {
-                        choiceArray.push(dept_name)
-                    });
-                    return choiceArray;
-                },
-                message: 'Please Chose Depatment',
+                choices: choiceArray,
+                message: 'Please Chose Department',
 
             },
             {
                 name: 'role',
                 type: 'rawlist',
-                choices() {
-                    const choiceRole = [];
-                    results.forEach((title) => {
-                        choiceRole.push(title)
-                    });
-                    return choiceRole;
-                },
-                message: 'Pleas enter employee role?',
+                choices: choiceRole,
+                message: 'Pleas enter employee role?'
             },
             {
                 name: 'manager',
                 type: 'rawlist',
-                choices() {
-                    const choiceManager = [];
-                    results.forEach((manager_id) => {
-                        choiceManager.push(manager_id)
-                    });
-                    return choiceManager;
-                }
+                choices: choiceManager,
+                message: 'Please choose a manager?'
+
             }
 
         ]).then((answer) => {
@@ -110,10 +135,10 @@ const addEmp = () => {
                 if (item.dept_id === answer.department) {
                     chosenDept = item;
                 }
-                // let chosenRole;
-                // if(item.title === answer.role){
-                //     chosenRole = item;
-                // }
+                let chosenRole;
+                if (item.title === answer.role) {
+                    chosenRole = item;
+                }
             });
             connection.query("INSERT INTO employee SET ?", {
                     first_name: answer.first_name,
@@ -129,7 +154,9 @@ const addEmp = () => {
                 }
             );
         });
-    })
+    } catch (err) {
+        console.log(err)
+    }
 }
 // function to add new Role
 const addRole = () => {
@@ -159,13 +186,14 @@ const addRole = () => {
         },
         (err) => {
             if (err) throw err;
-            console.log('new role been added');
-            viewRoles()
+            console.log('new role been added\n');
             mainMenu();
         })
 }
 // function to add new Department
 const addDept = () => {
+
+
     inquirer.prompt([{
         type: 'input',
         message: 'what is the new department',
@@ -178,7 +206,7 @@ const addDept = () => {
         },
         (err, res) => {
             if (err) throw err;
-            console.log('new Department been added');
+            console.log('new Department been added\n');
             viewDept();
             mainMenu();
         })
@@ -261,9 +289,10 @@ const updateRole = () => {
                     choices() {
                         const choiceArray = [];
                         results.forEach(({
-                            first_name
+                            first_name,
+                            last_name
                         }) => {
-                            choiceArray.push(first_name);
+                            choiceArray.push(first_name, last_name);
                         });
                         return choiceArray;
                     },
@@ -286,7 +315,7 @@ const updateRole = () => {
 
                 // bid was high enough, so update db, let the user know, and start over
                 connection.query(
-                    'UPDATE auctions SET ? WHERE ?',
+                    'UPDATE employee SET ? WHERE ?',
                     [{
                             title: answer.new_role,
                         },
@@ -311,6 +340,15 @@ const updateMang = () => {
 }
 // function to view Employee by manager
 const viewEmpMang = () => {
+    connection.query(
+        `SELECT 
+        a.first_name AS FirstName, a.last_name AS LastName, concat(b.first_name, ' ',b.last_name) as Manager FROM employee a LEFT OUTER JOIN employee b ON a.manager_id = b.id ORDER BY Manager;
+        `, (err, res) => {
+            if (err) throw err;
+            console.table(res);
+            mainMenu();
+        }
+    )
 
 }
 // function to view Department Budget
