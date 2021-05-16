@@ -6,7 +6,7 @@
 This NodeJs with MYSQL application is developed to create an interface that make easy for non-developers to view and interact with information stored in database.
 ## Instalation
 
-        Clone the repository to your local machine and install npm inquirer and mysql and run employee_tracker.js from your terminal.
+        Clone the repository to your local machine and install npm inquirer and mysql and run managementSystem.js from your terminal.
 ## Usage
 This application is a good solution to work with the heuman resource data through providing the following benefits
 * Add department
@@ -17,7 +17,7 @@ This application is a good solution to work with the heuman resource data throug
 * view employees
 * Update employee roles
 * Delete employee
-* view all employees by department
+* view all employees 
 * view employees by manager
 * [Video-link]()
 

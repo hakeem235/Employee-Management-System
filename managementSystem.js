@@ -194,24 +194,25 @@ const addDept = () => {
 }
 // function to delete Employee
 const removeEmp = () => {
+    const queryRemEmp = `SELECT * FROM employee`
+  connection.query(queryRemEmp, (err, res) => {
+    if (err) throw err;
     inquirer.prompt([{
-        type: 'input',
-        message: 'Enter employee ID',
-        name: 'emp_id',
-    }]).then((answer) => {
-        const query = connection.query(
-            'DELETE FROM employee WHERE ?', {
-                id: answer.emp_id,
-            },
-            (err, res) => {
-                if (err) throw err;
-                console.log(`${res.affectedRows} Employee Removed!\n`);
-                // Call viewAll AFTER the DELETE completes
-                viewAll();
-                mainMenu();
-            }
-        );
+      type: 'list',
+      name: 'employeeID',
+      message: 'Please select an employee you would like to delete from the list',
+      choices: res.map(employee => {
+        return { name: `${employee.first_name} ${employee.last_name}`, value: employee.id }
+      })
+    }]).then(answer => {
+      const queryRemEmp1 = `DELETE FROM employee WHERE ?`
+      connection.query(queryRemEmp1, [{ id: answer.employeeID }], (err) => {
+        if (err) throw err;
+        viewAll();
+      })
+
     })
+  })
 }
 // function to delete Department
 const removeDept = () => {
