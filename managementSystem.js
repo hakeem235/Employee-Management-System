@@ -259,199 +259,142 @@ const removeRole = () => {
 }
 // function to update Role
 const updateRole = () => {
-        connection.query('SELECT employee.id,first_name, last_name, title,dept_name, salary FROM employee INNER JOIN roles ON employee.role_id=roles.id INNER JOIN department ON roles.dept_id=department.id', (err, results) => {
-                    if (err) throw err;
-                    // once you have the items, prompt the user for which they'd like to bid on
-                    inquirer
-                        .prompt([{
-                            name: 'choice',
-                            type: 'rawlist',
-                            choices() {
-                                const choiceArray = [];
-                                results.forEach(({
-                                    name: `${first_name} ${last_name}`,
-                                    value: id
-                                }) => {
-                                    choiceArray.push(first_name + " " + last_name);
-                                });
-                                return choiceArray;
-                            },
-                            message: 'select the employess?',
-                        }, ])
-                        .then((answer) => {
-                            let choiceRole = [];
-                            connection.query('SELECT * FROM roles', (err, results) => {
-                                if (err) throw err;
-                                results.forEach((role) => {
-                                    choiceRole.push({
-                                        name: role.title,
-                                        value: role.id,
-                                    })
-                                })
-                                inquirer.prompt([{
-                                    type: 'list',
-                                    name: 'new_role',
-                                    message: 'What is employee role?',
-                                    choices: choiceRole,
-                                }]).then((answer) => {
-                                    let new_role = answer.new_role;
-                                    connection.query(
-                                        'UPDATE employee SET role_id = ? WHERE id = ?',
-                                        [{
-                                               role_id : answer.new_role,
-                                            },
-                                            {
-                                                role_id: employee.id,
-                                            },
-                                        ],
-                                        (error) => {
-                                            if (error) throw err;
-                                            console.log('update successfully!');
-                                            viewAll()
-                                            mainMenu();
-                                        }
-                                    );
+    connection.query('SELECT employee.id, employee.first_name, employee.last_name FROM employee', (err, res) => {
+        if (err) throw err;
 
-                                })
-                                // // get the information of the chosen item
-                                // let chosenRole;
-                                // results.forEach((item) => {
-                                //     if (item.title === answer.choice) {
-                                //         chosenRole = item;
-                                //     }
-                                // });
+        const chooseEmp = res.map(item => ({
+            name: `${item.first_name} ${item.last_name}`,
+            value: item.id
+        }))
+        connection.query('SELECT roles.id, roles.title FROM roles', (err, response) => {
 
-                                // bid was high enough, so update db, let the user know, and start over
-
-                            });
-                        });
-                    })
-                };
-                // function to update manager
-                const updateMang = () => {
-
-                    connection.query('UPDATE employee SET column_name = new_value WHERE condition');
+            const roles = response.map(item => ({
+                "name": item.title,
+                "value": item.id
+            }));
+            inquirer.prompt([{
+                    type: 'rawlist',
+                    name: 'employee',
+                    message: 'Please choose an employee?',
+                    choices: chooseEmp
+                },
+                {
+                    type: 'rawlist',
+                    name: 'newRole',
+                    message: 'Please choose new role',
+                    choices: roles
                 }
-                // function to view Employee by manager
-                const viewEmpMang = () => {
-                    connection.query(
-                        `SELECT 
+            ]).then((answer) => {
+                connection.query('UPDATE employee SET employee.role_id = ? WHERE employee.id = ?', [answer.newRole, answer.employee], (err) => {
+                    if (err) throw err;
+                    viewAll();
+                    mainMenu()
+                });
+
+            });
+        });
+
+    });
+};
+// function to update manager
+
+// function to view Employee by manager
+const viewEmpMang = () => {
+    connection.query(
+        `SELECT 
         a.first_name AS FirstName, a.last_name AS LastName, concat(b.first_name, ' ',b.last_name) as Manager FROM employee a LEFT OUTER JOIN employee b ON a.manager_id = b.id ORDER BY Manager;
         `, (err, res) => {
-                            if (err) throw err;
-                            console.table(res);
-                            mainMenu();
-                        }
-                    )
+            if (err) throw err;
+            console.table(res);
+            mainMenu();
+        }
+    )
 
-                }
-                // function to view Department Budget
-                const viewBudget = () => {
-                    inquirer.prompt([{
-                        type: 'rewlist',
-                        message: 'whice department you need to knowe there budget?',
-                        name: 'dep_budget'
-                    }]).then((answe) => {
-                        connection.query('SELECT dept_name, SUM (salary) FROM roles GROUP BY dept_name;', {
-                                dept_id: answe.dep_budget
-                            },
-                            (err, res) => {
-                                if (err) throw err;
-                                console.table(res)
-                                mainMenu();
-                            })
-                    })
-
-                }
+}
+// function to view Department Budget
 
 
-                function mainMenu() {
-                    // main menu prompts
-                    inquirer.prompt({
-                        type: "list",
-                        name: "startQ",
-                        message: "What would you like to do?",
-                        choices: [
-                            "View All Employees",
-                            "View All Departments",
-                            "View All Roles",
-                            "Add Employee",
-                            "Add Role",
-                            "Add Department",
-                            "Remove Employee",
-                            "Remove Department",
-                            "Remove Role",
-                            "Update Employee Role",
-                            "Update Employee Manager",
-                            "View Employees by Manager",
-                            "View the total budget of a department",
-                            "Exit",
-                        ]
-                    }).then(function (res) {
-                        switch (res.startQ) {
-                            case "View All Employees":
-                                viewAll();
-                                break;
-                            case "View All Departments":
-                                viewDept();
-                                break;
-                            case "View All Roles":
-                                viewRoles();
-                                break;
-                            case "Add Employee":
-                                addEmp();
-                                break;
-                            case "Add Role":
-                                addRole();
-                                break;
-                            case "Add Department":
-                                addDept();
-                                break;
-                            case "Remove Employee":
-                                removeEmp();
-                                break;
-                            case "Remove Department":
-                                removeDept();
-                                break;
-                            case "Remove Role":
-                                removeRole();
-                                break;
-                            case "Update Employee Role":
-                                updateRole();
-                                break;
-                            case "Update Employee Manager":
-                                updateMang();
-                                break;
-                                break;
-                            case "View Employees by Manager":
-                                viewEmpMang();
-                                break;
-                            case "View the total budget of a department":
-                                viewBudget();
-                                break;
-                            case "Exit":
-                                console.log('Goodbye!');
-                        }
-                    })
-                };
 
-                // Welcome Message
-                function welcome() {
-                    console.log(` x-------------------------------------x`);
-                    console.log(` |                                     |`);
-                    console.log(`  Welcome to Ahmed's Management System  `);
-                    console.log(` |                                     |`);
-                    console.log(` x-------------------------------------x`);
-                    console.log(`                                        `);
-                };
+function mainMenu() {
+    // main menu prompts
+    inquirer.prompt({
+        type: "list",
+        name: "startQ",
+        message: "What would you like to do?",
+        choices: [
+            "View All Employees",
+            "View All Departments",
+            "View All Roles",
+            "Add Employee",
+            "Add Role",
+            "Add Department",
+            "Remove Employee",
+            "Remove Department",
+            "Remove Role",
+            "Update Employee Role",
+            
+            "View Employees by Manager",
+            
+            "Exit",
+        ]
+    }).then(function (res) {
+        switch (res.startQ) {
+            case "View All Employees":
+                viewAll();
+                break;
+            case "View All Departments":
+                viewDept();
+                break;
+            case "View All Roles":
+                viewRoles();
+                break;
+            case "Add Employee":
+                addEmp();
+                break;
+            case "Add Role":
+                addRole();
+                break;
+            case "Add Department":
+                addDept();
+                break;
+            case "Remove Employee":
+                removeEmp();
+                break;
+            case "Remove Department":
+                removeDept();
+                break;
+            case "Remove Role":
+                removeRole();
+                break;
+            case "Update Employee Role":
+                updateRole();
+                break;
+            case "View Employees by Manager":
+                viewEmpMang();
+                break;
+            case "Exit":
+                console.log('Goodbye!');
+        }
+    })
+};
 
-                // Start Program Function
-                function start() {
-                    // with welcome message
-                    welcome();
-                    // then firing main menu
-                    mainMenu();
-                }
+// Welcome Message
+function welcome() {
+    console.log(` x-------------------------------------x`);
+    console.log(` |                                     |`);
+    console.log(`  Welcome to Ahmed's Management System  `);
+    console.log(` |                                     |`);
+    console.log(` x-------------------------------------x`);
+    console.log(`                                        `);
+};
 
-                // Starting Program
-                start();
+// Start Program Function
+function start() {
+    // with welcome message
+    welcome();
+    // then firing main menu
+    mainMenu();
+}
+
+// Starting Program
+start();
