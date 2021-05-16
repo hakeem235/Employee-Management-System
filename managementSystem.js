@@ -119,7 +119,7 @@ const addEmp = () => {
                                     console.log('employee inserted!\n');
                                     // Call updateProduct AFTER the INSERT completes
                                     viewAll()
-                                    mainMenu();
+                                    mainMenu()
                                 }
                             );
                         });
@@ -139,7 +139,6 @@ const addRole = () => {
                 value: dept.id
             })
         });
-
     })
     inquirer.prompt([{
             type: 'input',
@@ -160,15 +159,16 @@ const addRole = () => {
 
     ]).then((answer) => {
             connection.query("INSERT INTO roles SET ?", {
-                title: answer.title,
-                salary: answer.salary,
-                dept_id: answer.dept_id,
-            });
-            mainMenu()
+                    title: answer.title,
+                    salary: answer.salary,
+                    dept_id: answer.dept_id
+                }
+            );
         },
         (err) => {
             if (err) throw err;
-            console.log('new role been added\n');
+            viewRoles()
+            mainMenu()
         })
 }
 // function to add new Department
@@ -182,7 +182,7 @@ const addDept = () => {
                 dept_name: answer.dept_name,
             });
         },
-        (err, res) => {
+        (err) => {
             if (err) throw err;
             console.log('new Department been added\n');
             viewDept();
@@ -193,24 +193,31 @@ const addDept = () => {
 // function to delete Employee
 const removeEmp = () => {
     const queryRemove = `SELECT * FROM employee`
-  connection.query(queryRemove, (err, res) => {
-    if (err) throw err;
-    inquirer.prompt([{
-      type: 'rawlist',
-      name: 'employeeID',
-      message: 'Please select an employee that will be fired?',
-      choices: res.map(employee => {
-        return { name: `${employee.first_name} ${employee.last_name}`, value: employee.id }
-      })
-    }]).then(answer => {
-      const removedEmployee = 'DELETE FROM employee WHERE ?'
-      connection.query(removedEmployee, [{ id: answer.employeeID }], (err) => {
+    connection.query(queryRemove, (err, res) => {
         if (err) throw err;
-        viewAll();
-      })
+        inquirer.prompt([{
+            type: 'rawlist',
+            name: 'employeeID',
+            message: 'Please select an employee that will be fired?',
+            choices: res.map(employee => {
+                return {
+                    name: `${employee.first_name} ${employee.last_name}`,
+                    value: employee.id
+                }
+            })
+        }]).then(answer => {
+            const removedEmployee = 'DELETE FROM employee WHERE ?'
+            connection.query(removedEmployee, [{
+                id: answer.employeeID
+            }], (err) => {
+                if (err) throw err;
+                console.log("the employee has been fired\n")
+                viewAll();
+                mainMenu();
+            })
 
+        })
     })
-  })
 }
 // function to delete Department
 const removeDept = () => {
@@ -218,14 +225,14 @@ const removeDept = () => {
         type: 'input',
         message: 'which department you whant to delete?',
         name: 'dep_name',
-    }]).then((answe) => {
+    }]).then((answer) => {
         connection.query(
             'DELETE FROM department WHERE ?', {
                 dept_name: answer.dep_name,
             },
-            (err, res) => {
+            (err) => {
                 if (err) throw err;
-                console.log(`${res.affectedRows} Department Removed!\n`);
+                console.log('Department Removed!\n');
                 // Call viewAll AFTER the DELETE completes
                 viewAll();
                 mainMenu();
@@ -248,7 +255,7 @@ const removeRole = () => {
             },
             (err, res) => {
                 if (err) throw err;
-                console.log(`${res.affectedRows} Role deleted!\n`);
+                console.log('Role deleted!\n');
                 // Call viewAll AFTER the DELETE completes
                 viewAll();
                 mainMenu();
@@ -272,13 +279,13 @@ const updateRole = () => {
                 "value": item.id
             }));
             inquirer.prompt([{
-                    type: 'rawlist',
+                    type: 'list',
                     name: 'employee',
                     message: 'Please choose an employee?',
                     choices: chooseEmp
                 },
                 {
-                    type: 'rawlist',
+                    type: 'list',
                     name: 'newRole',
                     message: 'Please choose new role',
                     choices: roles
@@ -286,6 +293,7 @@ const updateRole = () => {
             ]).then((answer) => {
                 connection.query('UPDATE employee SET employee.role_id = ? WHERE employee.id = ?', [answer.newRole, answer.employee], (err) => {
                     if (err) throw err;
+                    console.log("Role has updated\n")
                     viewAll();
                     mainMenu()
                 });
@@ -300,11 +308,11 @@ const updateRole = () => {
 // function to view Employee by manager
 const viewEmpMang = () => {
     connection.query(
-        `SELECT 
-        a.first_name AS FirstName, a.last_name AS LastName, concat(b.first_name, ' ',b.last_name) as Manager FROM employee a LEFT OUTER JOIN employee b ON a.manager_id = b.id ORDER BY Manager;
-        `, (err, res) => {
+        'SELECT a.first_name AS FirstName, a.last_name AS LastName, concat(b.first_name, ,b.last_name) as Manager FROM employee a LEFT OUTER JOIN employee b ON a.manager_id = b.id ORDER BY Manager;', (err, res) => {
             if (err) throw err;
+
             console.table(res);
+            console.log('\n')
             mainMenu();
         }
     )
@@ -331,9 +339,7 @@ function mainMenu() {
             "Remove Department",
             "Remove Role",
             "Update Employee Role",
-            
             "View Employees by Manager",
-            
             "Exit",
         ]
     }).then(function (res) {
