@@ -159,7 +159,6 @@ const addRole = () => {
         }
 
     ]).then((answer) => {
-            console.log(answer)
             connection.query("INSERT INTO roles SET ?", {
                 title: answer.title,
                 salary: answer.salary,
@@ -179,7 +178,6 @@ const addDept = () => {
         message: 'what is the new department',
         name: 'dept_name'
     }]).then((answer) => {
-            console.log(answer)
             connection.query("INSERT INTO department SET ?", {
                 dept_name: answer.dept_name,
             });
@@ -194,19 +192,19 @@ const addDept = () => {
 }
 // function to delete Employee
 const removeEmp = () => {
-    const queryRemEmp = `SELECT * FROM employee`
-  connection.query(queryRemEmp, (err, res) => {
+    const queryRemove = `SELECT * FROM employee`
+  connection.query(queryRemove, (err, res) => {
     if (err) throw err;
     inquirer.prompt([{
-      type: 'list',
+      type: 'rawlist',
       name: 'employeeID',
-      message: 'Please select an employee you would like to delete from the list',
+      message: 'Please select an employee that will be fired?',
       choices: res.map(employee => {
         return { name: `${employee.first_name} ${employee.last_name}`, value: employee.id }
       })
     }]).then(answer => {
-      const queryRemEmp1 = `DELETE FROM employee WHERE ?`
-      connection.query(queryRemEmp1, [{ id: answer.employeeID }], (err) => {
+      const removedEmployee = 'DELETE FROM employee WHERE ?'
+      connection.query(removedEmployee, [{ id: answer.employeeID }], (err) => {
         if (err) throw err;
         viewAll();
       })
